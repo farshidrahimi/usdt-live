@@ -15,7 +15,7 @@ footer{margin-top:23px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;j
 <body><main>
 <header><div><h1>USDT Live</h1><p class="sub">Iran exchange rates · IRT</p></div><div id="status" class="status"><span class="dot"></span><span id="status-text">Connecting</span></div></header>
 <section class="hero"><div class="eyebrow">Average USDT price</div><div class="value" id="average">—</div><div class="unit">Toman / USDT</div><p class="muted" id="average-detail">Waiting for exchange data</p></section>
-<div class="section"><h2>Exchanges</h2><span>Refresh every 30s</span></div>
+<div class="section"><h2>Exchanges</h2><span>Refresh every 2s</span></div>
 <section class="grid" id="grid">
 <div class="exchange" id="bitpin"><h3>BitPin</h3><div class="price">—</div><div class="detail">Loading</div></div>
 <div class="exchange" id="nobitex"><h3>Nobitex</h3><div class="price">—</div><div class="detail">Loading</div></div>
@@ -23,5 +23,5 @@ footer{margin-top:23px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;j
 <div class="exchange" id="tabdeal"><h3>Tabdeal</h3><div class="price">—</div><div class="detail">Loading</div></div>
 </section>
 <footer><span class="muted" id="updated">Not updated yet</span><button class="refresh" id="refresh" type="button">Refresh now</button></footer>
-<p class="footnote">Prices are indicative, not trading quotes. The average includes only successfully fetched exchanges. Data refreshes while this page is open; iOS may pause updates in the background. Browser CORS restrictions may require a proxy.</p>
+<p class="footnote">Prices are indicative, not trading quotes. The average includes only successfully fetched exchanges. Data refreshes about every 2 seconds after each completed fetch while this page is open; iOS may pause updates in the background. Browser CORS restrictions may require a proxy.</p>
 </main><script type="module" src="./src/app.js"></script></body></html>
