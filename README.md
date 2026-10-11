@@ -4,7 +4,7 @@ Mobile-first, installable USDT/IRT dashboard for **BitPin**, **Nobitex**, **Wall
 
 ## Features
 
-- Polls four exchange APIs every **30 seconds while the app is visible**.
+- Polls four exchange APIs every **2 seconds while the app is visible**.
 - Displays per-exchange quotes, indicative average of available prices, errors, and last update time.
 - Install from Safari: Share → **Add to Home Screen**.
 - Static, dependency-free frontend, deployable with GitHub Pages.
@@ -38,3 +38,7 @@ The average mixes last-trade and midpoint prices and is **indicative**, not an e
 ## Limitations
 
 GitHub Pages cannot bypass CORS. The browser polls only while the page is visible; iOS may suspend it in the background. This PWA is **not** a Dynamic Island Live Activity. Exchange integrations need validation against live API responses before production reliance.
+
+## Troubleshooting
+
+Scriptable can fetch APIs that Safari blocks due to CORS. If Wallex or Tabdeal shows **Network / CORS blocked**, deploy the optional Cloudflare Worker in `worker/worker.js` and open the dashboard with `?proxy=https://YOUR-WORKER.workers.dev`. The proxy URL is remembered in browser storage; `?proxy=` clears it. Two-second polling is best effort and may be rate-limited.
