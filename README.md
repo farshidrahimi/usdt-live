@@ -46,3 +46,9 @@ GitHub Pages deployment is automated by `.github/workflows/pages.yml` on every p
 ## Troubleshooting
 
 Scriptable can fetch APIs that Safari blocks due to CORS. If Wallex or Tabdeal shows **Network / CORS blocked**, deploy the optional Cloudflare Worker in `worker/worker.js` and open the dashboard with `?proxy=https://YOUR-WORKER.workers.dev`. The proxy URL is remembered in browser storage; `?proxy=` clears it. Two-second polling is best effort and may be rate-limited.
+
+## No-account public proxy fallback
+
+When a **direct browser network request** to Wallex or Tabdeal fails, the dashboard automatically retries anonymous market data through `https://corsproxy.io/?url=`. No Cloudflare account or configuration is needed. Successful fallback cards display **public proxy**.
+
+**Tradeoffs:** this third-party proxy can be blocked, unavailable, throttled, or serve incorrect/stale data. Do not use its results for trading decisions without independent verification. Only public market data is routed through it; no account credentials are sent by this application. A two-second polling cadence may exceed proxy or exchange rate limits. The public proxy is not controlled or guaranteed by this project.
