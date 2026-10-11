@@ -13,7 +13,7 @@ Mobile-first, installable USDT/IRT dashboard for **BitPin**, **Nobitex**, **Wall
 
 1. Merge this PR.
 2. Open **Settings → Pages** in this repository.
-3. Set **Deploy from a branch** → `main` → `/ (root)` → Save.
+3. Under **Build and deployment → Source**, select **GitHub Actions**. The workflow in `.github/workflows/pages.yml` deploys automatically on pushes to `main`.
 4. Visit https://farshidrahimi.github.io/usdt-live/ in Safari and choose **Add to Home Screen**.
 
 ## Browser CORS / optional Cloudflare Worker
