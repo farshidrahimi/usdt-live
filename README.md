@@ -46,3 +46,18 @@ GitHub Pages deployment is automated by `.github/workflows/pages.yml` on every p
 ## Troubleshooting
 
 Scriptable can fetch APIs that Safari blocks due to CORS. If Wallex or Tabdeal shows **Network / CORS blocked**, deploy the optional Cloudflare Worker in `worker/worker.js` and open the dashboard with `?proxy=https://YOUR-WORKER.workers.dev`. The proxy URL is remembered in browser storage; `?proxy=` clears it. Two-second polling is best effort and may be rate-limited.
+
+## Deploy the CORS workaround automatically
+
+The repository includes a Cloudflare Worker and a GitHub Actions workflow at `.github/workflows/deploy-proxy.yml`.
+
+1. Create a Cloudflare account and obtain your **Account ID**.
+2. Create a Cloudflare API token with **Workers Scripts: Edit** permission scoped to your account.
+3. Add two repository Actions secrets at **Settings → Secrets and variables → Actions**:
+   - `CLOUDFLARE_API_TOKEN`
+   - `CLOUDFLARE_ACCOUNT_ID`
+4. Merge the proxy PR. The workflow will deploy on the next change to `worker/**`, or run **Deploy Cloudflare price proxy** manually in GitHub Actions.
+5. Find your deployed `https://usdt-live-proxy.<your-subdomain>.workers.dev` address in the workflow logs or Cloudflare dashboard.
+6. Open the PWA once using `https://farshidrahimi.github.io/usdt-live/?proxy=https://usdt-live-proxy.<your-subdomain>.workers.dev`. The proxy setting is saved locally on that browser/device. Use `?proxy=` to clear it.
+
+This server-side proxy avoids browser CORS restrictions; it does not bypass exchange API rate limits or geographic restrictions. A 2-second interval is best effort and may be throttled.
