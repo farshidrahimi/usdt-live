@@ -4,7 +4,7 @@ Mobile-first, installable USDT/IRT dashboard for **BitPin**, **Nobitex**, **Wall
 
 ## Features
 
-- Polls four exchange APIs every **30 seconds while the app is visible**.
+- Polls four exchange APIs approximately every **2 seconds after each completed fetch while the app is visible**.
 - Displays per-exchange quotes, indicative average of available prices, errors, and last update time.
 - Install from Safari: Share → **Add to Home Screen**.
 - Static, dependency-free frontend, deployable with GitHub Pages.
@@ -18,7 +18,7 @@ Mobile-first, installable USDT/IRT dashboard for **BitPin**, **Nobitex**, **Wall
 
 ## Browser CORS / optional Cloudflare Worker
 
-Some exchange APIs block direct browser requests via CORS. Deploy `worker/worker.js` to a Cloudflare Worker if necessary and open:
+Scriptable's Request API is not subject to browser CORS, but Safari fetch is. If Wallex or Tabdeal still fail after the parser fixes, inspect browser network errors and use the optional Worker proxy. Some exchange APIs block direct browser requests via CORS. Deploy `worker/worker.js` to a Cloudflare Worker if necessary and open:
 
 ```
 https://farshidrahimi.github.io/usdt-live/?proxy=https://YOUR-WORKER.workers.dev
