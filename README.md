@@ -1,30 +1,40 @@
 # USDT Live
 
-Mobile-first USDT/IRT dashboard for BitPin, Nobitex, Wallex, and Tabdeal.
+Mobile-first, installable USDT/IRT dashboard for **BitPin**, **Nobitex**, **Wallex**, and **Tabdeal**.
+
+## Features
+
+- Polls four exchange APIs every **30 seconds while the app is visible**.
+- Displays per-exchange quotes, indicative average of available prices, errors, and last update time.
+- Install from Safari: Share → **Add to Home Screen**.
+- Static, dependency-free frontend, deployable with GitHub Pages.
 
 ## Deploy
 
-1. Merge this pull request.
-2. Open **Settings → Pages** and choose **Deploy from a branch** → **main** → **/ (root)**.
-3. Open https://farshidrahimi.github.io/usdt-live/ in iPhone Safari, then tap **Share → Add to Home Screen**.
+1. Merge this PR.
+2. Open **Settings → Pages** in this repository.
+3. Set **Deploy from a branch** → `main` → `/ (root)` → Save.
+4. Visit https://farshidrahimi.github.io/usdt-live/ in Safari and choose **Add to Home Screen**.
 
-The app polls every 30 seconds **while visible** and displays available exchange prices, an indicative average, errors, and last checked time.
+## Browser CORS / optional Cloudflare Worker
 
-## CORS
+Some exchange APIs block direct browser requests via CORS. Deploy `worker/worker.js` to a Cloudflare Worker if necessary and open:
 
-Exchange APIs may block browser requests via CORS. An optional restricted Cloudflare Worker proxy is included in `worker/worker.js`. Deploy it as a Worker, then visit:
+```
+https://farshidrahimi.github.io/usdt-live/?proxy=https://YOUR-WORKER.workers.dev
+```
 
-`https://farshidrahimi.github.io/usdt-live/?proxy=https://YOUR-WORKER.workers.dev`
+The optional proxy only accepts the four allowed exchange hosts. Do not expose an unrestricted CORS proxy. For an installed Home Screen PWA, configure the proxy as the default in `src/app.js`, because URL query parameters might not persist after installation.
 
-To make a proxy permanent for a Home Screen installation, set the `proxy` default in `src/app.js` before installing; URL query parameters may not persist.
+## Price methodology
 
-## Price sources
+- **BitPin:** ticker last price.
+- **Nobitex:** last trade price converted from IRR to IRT.
+- **Wallex:** last trade price.
+- **Tabdeal:** midpoint between best bid and best ask.
 
-- BitPin: ticker price.
-- Nobitex: last trade price converted from IRR to IRT.
-- Wallex: last price.
-- Tabdeal: midpoint of best bid and ask.
+The average mixes last-trade and midpoint prices and is **indicative**, not an executable trading quote. Exchange APIs and response schemas can change; unavailable values display errors rather than fabricated prices.
 
-The average combines available values and is **not an executable trading quote**. API formats and units should be verified against current responses before relying on these prices.
+## Limitations
 
-GitHub Pages does not bypass CORS. iOS suspends background web apps; this is not a Dynamic Island Live Activity.
+GitHub Pages cannot bypass CORS. The browser polls only while the page is visible; iOS may suspend it in the background. This PWA is **not** a Dynamic Island Live Activity. Exchange integrations need validation against live API responses before production reliance.
