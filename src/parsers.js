@@ -1,27 +1,39 @@
-// Exchange response schemas can change; invalid/missing values must never be shown as zero.
-const positive = (v) => { const n = Number(v); return Number.isFinite(n) && n > 0 ? n : null; };
+// Validate exchange values without silently treating missing prices as zero.
+function num(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const n = Number(String(value).replace(/,/g, ""));
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
 export function parseBitpin(data) {
-  const root = data?.results ?? data?.data ?? data?.tickers ?? data;
-  const keys = ["USDT_IRT", "USDTIRT", "USDTTMN", "USDT_TMN"];
-  let item;
-  if (Array.isArray(root)) item = root.find(x => keys.includes(String(x.symbol ?? x.market ?? x.name ?? "").toUpperCase()));
-  else if (root && typeof root === "object") item = keys.map(k => root[k]).find(Boolean);
-  return positive(item?.price ?? item?.last_price ?? item?.lastPrice ?? item?.latest_price ?? item?.close);
+  const containers = [data, data?.results, data?.data, data?.result, data?.tickers, data?.data?.results];
+  const symbols = ["USDT_IRT", "USDTIRT", "USDT_TMN", "USDTTMN"];
+  for (const container of containers) {
+    let item;
+    if (Array.isArray(container)) {
+      item = container.find(x => symbols.includes(String(x?.symbol ?? x?.market ?? x?.code ?? x?.name ?? "").toUpperCase()));
+    } else if (container && typeof container === "object") {
+      item = symbols.map(symbol => container[symbol]).find(Boolean);
+    }
+    if (item) return num(item.price ?? item.last_price ?? item.lastPrice ?? item.latest_price ?? item.close);
+  }
+  return null;
 }
 export function parseNobitex(data) {
-  if (data?.status && data.status !== "ok") return null;
-  // Nobitex USDTIRT orderbook values are commonly expressed in IRR.
-  return positive(data?.lastTradePrice) / 10 || null;
+  if (data?.status !== "ok") return null;
+  const price = num(data.lastTradePrice);
+  return price === null ? null : price / 10;
 }
 export function parseWallex(data) {
-  const symbols = data?.result?.symbols ?? data?.symbols;
-  const item = Array.isArray(symbols) ? symbols.find(x => ["USDTTMN", "USDTIRT"].includes(x.symbol)) : (symbols?.USDTTMN ?? symbols?.USDTIRT);
-  return positive(item?.stats?.lastPrice ?? item?.lastPrice);
+  const symbols = data?.result?.symbols;
+  const market = Array.isArray(symbols)
+    ? symbols.find(x => x?.symbol === "USDTTMN")
+    : symbols?.USDTTMN;
+  if (!market) return null;
+  return num(market.stats?.lastPrice ?? market.stats?.last_price ?? market.lastPrice);
 }
 export function parseTabdeal(data) {
-  const bids = data?.bids ?? data?.result?.bids;
-  const asks = data?.asks ?? data?.result?.asks;
-  const bid = positive(bids?.[0]?.[0]);
-  const ask = positive(asks?.[0]?.[0]);
-  return bid && ask ? (bid + ask) / 2 : null;
+  if (!Array.isArray(data?.bids) || !Array.isArray(data?.asks)) return null;
+  const bid = num(data.bids[0]?.[0]);
+  const ask = num(data.asks[0]?.[0]);
+  return bid !== null && ask !== null ? (bid + ask) / 2 : null;
 }
