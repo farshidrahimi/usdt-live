@@ -20,22 +20,42 @@ const proxy = suppliedProxy ?? localStorage.getItem("usdtProxy") ?? "";
 const proxyURL = (url) => proxy ? proxy.replace(/\/$/, "") + "/?url=" + encodeURIComponent(url) : url;
 let inFlight = false;
 
+// Public proxy is used only for anonymous Wallex and Tabdeal market data.
+// It is third-party infrastructure: do not send tokens, cookies or private API calls.
+const PUBLIC_PROXY = "https://corsproxy.io/?url=";
+const publicProxyURL = url => PUBLIC_PROXY + encodeURIComponent(url);
+const fallbackNames = new Set(["wallex", "tabdeal"]);
+
+async function requestPrice(target, parse, signal) {
+  const response = await fetch(target, {
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+    signal
+  });
+  if (!response.ok) throw new Error("HTTP " + response.status);
+  const price = parse(await response.json());
+  if (!Number.isFinite(price) || price <= 0) throw new Error("Price unavailable");
+  return price;
+}
+
 async function loadOne(name, { url, parse }) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
-    const response = await fetch(proxyURL(url), {
-      cache: "no-store",
-      headers: { Accept: "application/json" },
-      signal: controller.signal
-    });
-    if (!response.ok) throw new Error("HTTP " + response.status);
-    const price = parse(await response.json());
-    if (!Number.isFinite(price) || price <= 0) throw new Error("Price unavailable");
-    return { name, price };
+    let price;
+    let viaPublicProxy = false;
+    try {
+      price = await requestPrice(proxyURL(url), parse, controller.signal);
+    } catch (directError) {
+      // Only retry network/CORS failures, never parser errors or HTTP failures.
+      if (!fallbackNames.has(name) || proxy || !(directError instanceof TypeError)) throw directError;
+      price = await requestPrice(publicProxyURL(url), parse, controller.signal);
+      viaPublicProxy = true;
+    }
+    return { name, price, viaPublicProxy };
   } catch (error) {
     const message = error.name === "AbortError" ? "Timed out" :
-      error instanceof TypeError ? "Network / CORS blocked" : error.message;
+      error instanceof TypeError ? "Network / proxy unavailable" : error.message;
     console.warn(name + ":", message);
     return { name, error: message };
   } finally {
@@ -55,7 +75,7 @@ async function refresh() {
       const el = $(item.name);
       el.classList.toggle("error", !Number.isFinite(item.price));
       el.querySelector(".price").textContent = Number.isFinite(item.price) ? fmt.format(item.price) : "—";
-      el.querySelector(".detail").textContent = Number.isFinite(item.price) ? "IRT / USDT" : item.error || "Unavailable";
+      el.querySelector(".detail").textContent = Number.isFinite(item.price) ? (item.viaPublicProxy ? "IRT / USDT · public proxy" : "IRT / USDT") : item.error || "Unavailable";
     }
     $("average").textContent = good.length ? fmt.format(good.reduce((sum, x) => sum + x.price, 0) / good.length) : "—";
     $("average-detail").textContent = good.length ? good.length + " of 4 exchanges reporting" : "No exchange data available";
